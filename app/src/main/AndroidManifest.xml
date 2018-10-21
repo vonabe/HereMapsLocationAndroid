@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.vonabe.here.location">
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="false">
+
+        <activity
+            android:name=".HelloActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppThemeHello">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name_default"
+            android:theme="@style/AppTheme">
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
+
+        <meta-data
+            android:name="com.here.android.maps.appid"
+            android:value="1WsxTzTLbdFgWseCol3i" />
+        <meta-data
+            android:name="com.here.android.maps.apptoken"
+            android:value="bcqyRq6tDQjSqlEdL_lIVA" />
+        <meta-data
+            android:name="com.here.android.maps.license.key"
+            android:value="bxv0FhmZcvVepZXeMHuBT960SMbaazJgwpznpgh4l5sqQ4ip+aJX351fZcKN2VfBA2M0AGnKuw3lcAlcxBFxYNVlpjpUM3MH83AaY/a/mM5xwJxg/rHGFd9cklKYtU9bH99IOdWX7FRc0vF2uyKcY0WeE+ky3+1f9BP/f6p9Ypc7cWyyZ83YCBrsXZlCmZ4Vc7fUrIXFNstaIU8mZyPaG14ZGkuOm8UGZMJ5HnJkBElZMCJd2jWE81QA1cpaeECI28jej4kApOGlNoz28vQZwJyMGz7mw3h7AP2kVsNtNs8vHURe39dqSwST7d4UTmUW1bJ9Pukyjo3aO+cXwpaUS45GX3aup3idoVGCytpl1hVfY6LDq9gWwaPfVLFYi/kv3mXJz+EFQlpEHf+WgmDPAiOLSqHsHz4h2Ny07zbSRle7tf7/5kW5sTi6KYahXgqdHhSdFAL5ztKnQWVc7G/kSGkCppN/cc6Igne5fuNoPpqHONcU8KNuS36oQVI/Hgvjzsk4m4O2WJpZXtNn6i0yN0EXqs9LNSu3UCW4Sejy9btX9JvoZ4Yq9fQBnUWobSl3F46RrR7r1jGH1wpJQW0k7rdJRaZ80JalRwvSIYSR6MWouVg8Hl1XuldALsk8J24QWgWfLq6YLbwhqVx6jyhjRubvplBD+u6S9XzQ71ObS/4=" />
+        <meta-data
+            android:name="INTENT_NAME"
+            android:value="com.here.android.tutorial.MapService" />
+
+        <service
+            android:name="com.here.android.mpa.service.MapService"
+            android:exported="false"
+            android:label="BasicMapSolutionMapService">
+            <intent-filter>
+                <action android:name="com.here.android.tutorial.MapService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>
