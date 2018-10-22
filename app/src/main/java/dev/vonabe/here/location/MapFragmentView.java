@@ -5,7 +5,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -16,6 +15,10 @@ import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
+import com.here.android.mpa.search.ErrorCode;
+import com.here.android.mpa.search.Location;
+import com.here.android.mpa.search.ResultListener;
+import com.here.android.mpa.search.ReverseGeocodeRequest2;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,16 +27,20 @@ import java.lang.ref.WeakReference;
 /**
  * This class encapsulates the properties and functionality of the Map view.
  */
-public class MapFragmentView implements ApplicationStatusListener, PositioningManager.OnPositionChangedListener{
+public class MapFragmentView implements ApplicationStatusListener, PositioningManager.OnPositionChangedListener {
 
     private MapFragment m_mapFragment;
     private Activity m_activity;
     private Map m_map;
+    private View view_point = null;
     private PositioningManager positionManager = null;
     private boolean addListener = false, showMessage = false;
+    private GeoCoordinate lastCoordinate = null;
 
     public MapFragmentView(Activity activity) {
         m_activity = activity;
+
+        view_point = m_activity.findViewById(R.id.view_point);
 
         View viewById = m_activity.findViewById(R.id.view_dragged);
         viewById.setOnTouchListener(new OnSwipeTouchListener(this.m_activity){
@@ -42,6 +49,7 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
                 m_activity.onBackPressed();
             }
         });
+
         initMapFragment();
     }
 
@@ -57,8 +65,7 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
         m_mapFragment = getMapFragment();
 
         // Set path of isolated disk cache
-        String diskCacheRoot = m_activity.getApplicationContext().getExternalFilesDir(null)
-                + File.separator + ".here-maps";
+        String diskCacheRoot = m_activity.getApplicationContext().getExternalFilesDir(null) + File.separator + ".here-maps";
         // Retrieve intent name from manifest
         String intentName = "";
         try {
@@ -100,6 +107,7 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
                         }
                         m_map.getPositionIndicator().setMarker(img);
                         m_mapFragment.getPositionIndicator().setVisible(true);
+//                        view_point.setVisibility(View.VISIBLE);
 
                         /*
                          * Map center can be set to a desired location at this point.
@@ -128,18 +136,16 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
     public void target() {
         if(positionManager==null)return;
         if(!addListener) {
-            m_mapFragment.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    Toast.makeText(m_activity, "touch", Toast.LENGTH_SHORT);
-                    return false;
-                }
-            });
-
             positionManager.addListener(new WeakReference<PositioningManager.OnPositionChangedListener>(this));
             addListener = true;
         }
+
+        if(lastCoordinate!=null){
+            m_map.setCenter(lastCoordinate, Map.Animation.LINEAR);
+        }
+
         positionManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
+        Toast.makeText(m_activity.getApplicationContext(), "Search ... ", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -147,6 +153,37 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
         if(positionManager!=null) {
             positionManager.stop();
             if (addListener) positionManager.removeListener(this);
+        }
+    }
+
+    @Override
+    public void activeDetect() {
+        view_point.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void deactiveDetect() {
+        view_point.setVisibility(View.INVISIBLE);
+    }
+
+    @Override
+    public void detectTarget() {
+        if(!m_map.getCenter().isValid())return;
+        GeoCoordinate geo = new GeoCoordinate(m_map.getCenter());
+        ReverseGeocodeRequest2 request = new ReverseGeocodeRequest2(geo);
+        ResultListener<Location> resultListener = new ResultListener<Location>() {
+            @Override
+            public void onCompleted(Location location, ErrorCode errorCode) {
+                if (errorCode != ErrorCode.NONE) {
+                    Toast.makeText(m_activity.getApplicationContext(), "Error GeoLocation Execute Complete", Toast.LENGTH_LONG).show();
+                } else {
+//                    Toast.makeText(m_activity.getApplicationContext(), location.getAddress().getText(), Toast.LENGTH_LONG).show();
+                    Snackbar.make(m_mapFragment.getView(),location.getAddress().getText(), Snackbar.LENGTH_LONG).show();
+                }
+            }
+        };
+        if (request.execute(resultListener) != ErrorCode.NONE) {
+            Toast.makeText(m_activity.getApplicationContext(), "Error GeoLocation Execute", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -159,6 +196,8 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
     public void onPositionUpdated(PositioningManager.LocationMethod locationMethod, GeoPosition geoPosition, boolean b) {
         if(positionManager!=null && positionManager.isActive()){
             m_map.setCenter(geoPosition.getCoordinate(), Map.Animation.LINEAR);
+            lastCoordinate = geoPosition.getCoordinate();
+            view_point.setVisibility(View.INVISIBLE);
             if(!showMessage){
                 Snackbar.make(m_mapFragment.getView(), "Ожидайте, за вами уже выехали!", Snackbar.LENGTH_INDEFINITE).show();
                 showMessage = true;
@@ -168,7 +207,6 @@ public class MapFragmentView implements ApplicationStatusListener, PositioningMa
 
     @Override
     public void onPositionFixChanged(PositioningManager.LocationMethod locationMethod, PositioningManager.LocationStatus locationStatus) {
-
     }
 
 }

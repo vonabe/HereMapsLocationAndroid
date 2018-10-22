@@ -1,6 +1,7 @@
 package dev.vonabe.here.location;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -53,14 +54,40 @@ public class MainActivity extends AppCompatActivity {
 
         mapFragmentView = new MapFragmentView(this);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton fab2 = findViewById(R.id.fab2);
+
+        final FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("RestrictedApi")
             @Override
             public void onClick(View view) {
+                fab2.setVisibility(View.INVISIBLE);
                 if(!mapFragmentView.isActive())
                     mapFragmentView.target();
                 else
                     mapFragmentView.pause();
+            }
+
+        });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @SuppressLint("RestrictedApi")
+            @Override
+            public boolean onLongClick(View view) {
+                if(fab2.getVisibility() == View.VISIBLE){
+                    fab2.setVisibility(View.INVISIBLE);
+                    mapFragmentView.deactiveDetect();
+                } else {
+                    fab2.setVisibility(View.VISIBLE);
+                    mapFragmentView.activeDetect();
+                }
+                return true;
+            }
+        });
+
+        fab2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mapFragmentView.detectTarget();
             }
         });
 
@@ -75,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     private void transition(){
         Slide slide = new Slide();
         slide.setSlideEdge(Gravity.RIGHT);
-        slide.setDuration(1000);
+        slide.setDuration(800);
         getWindow().setEnterTransition(slide);
     }
 
