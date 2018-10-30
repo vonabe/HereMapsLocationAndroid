@@ -20,6 +20,10 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Toast;
 
+import com.here.android.mpa.common.ApplicationContext;
+import com.here.android.mpa.common.MapEngine;
+import com.here.android.mpa.common.OnEngineInitListener;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,6 +100,14 @@ public class MainActivity extends AppCompatActivity {
             transition();
             getWindow().setAllowEnterTransitionOverlap(false);
         }
+
+        MapEngine.getInstance().init(new ApplicationContext(this), new OnEngineInitListener() {
+            @Override
+            public void onEngineInitializationCompleted(Error error) {
+                if(error!=Error.NONE)Toast.makeText(MainActivity.this, "error - "+error.name(), Toast.LENGTH_LONG);
+            }
+        });
+
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
